@@ -1,0 +1,130 @@
+From 4df42040e20de15ff7ef34817a45a77fce3a85e9 Mon Sep 17 00:00:00 2001
+From: K <dkim286@csu.fullerton.edu>
+Date: Fri, 6 Mar 2020 02:10:51 -0800
+Subject: [PATCH] initial commit
+
+---
+ config.def.h | 51 +++++++++++++++++++++------------------------------
+ x.c          | 17 +++++++++++++++++
+ 2 files changed, 38 insertions(+), 30 deletions(-)
+
+diff --git a/config.def.h b/config.def.h
+index 546edda..4247b7f 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -84,42 +84,32 @@ unsigned int tabspaces = 8;
+ 
+ /* Terminal colors (16 first used in escape sequence) */
+ static const char *colorname[] = {
+-	/* 8 normal colors */
+-	"black",
+-	"red3",
+-	"green3",
+-	"yellow3",
+-	"blue2",
+-	"magenta3",
+-	"cyan3",
+-	"gray90",
+-
+-	/* 8 bright colors */
+-	"gray50",
+-	"red",
+-	"green",
+-	"yellow",
+-	"#5c5cff",
+-	"magenta",
+-	"cyan",
+-	"white",
+-
+-	[255] = 0,
+-
+-	/* more colors can be added after 255 to use with DefaultXX */
+-	"#cccccc",
+-	"#555555",
++	"#073642",  /*  0: black    */
++	"#dc322f",  /*  1: red      */
++	"#859900",  /*  2: green    */
++	"#b58900",  /*  3: yellow   */
++	"#268bd2",  /*  4: blue     */
++	"#d33682",  /*  5: magenta  */
++	"#2aa198",  /*  6: cyan     */
++	"#eee8d5",  /*  7: white    */
++	"#002b36",  /*  8: brblack  */
++	"#cb4b16",  /*  9: brred    */
++	"#586e75",  /* 10: brgreen  */
++	"#657b83",  /* 11: bryellow */
++	"#839496",  /* 12: brblue   */
++	"#6c71c4",  /* 13: brmagenta*/
++	"#93a1a1",  /* 14: brcyan   */
++	"#fdf6e3",  /* 15: brwhite  */
+ };
+ 
+-
+ /*
+  * Default colors (colorname index)
+  * foreground, background, cursor, reverse cursor
+  */
+-unsigned int defaultfg = 7;
+-unsigned int defaultbg = 0;
+-static unsigned int defaultcs = 256;
+-static unsigned int defaultrcs = 257;
++unsigned int defaultfg = 12;
++unsigned int defaultbg = 15;
++static unsigned int defaultcs = 10;
++static unsigned int defaultrcs = 8;
+ 
+ /*
+  * Default shape of cursor
+@@ -186,6 +176,7 @@ static Shortcut shortcuts[] = {
+ 	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0} },
+ 	{ ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
+ 	{ TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
++	{ XK_ANY_MOD,           XK_F6,          swapcolors,     {.i =  0} },
+ };
+ 
+ /*
+diff --git a/x.c b/x.c
+index 48a6676..e64804e 100644
+--- a/x.c
++++ b/x.c
+@@ -55,6 +55,7 @@ static void clipcopy(const Arg *);
+ static void clippaste(const Arg *);
+ static void numlock(const Arg *);
+ static void selpaste(const Arg *);
++static void swapcolors(const Arg *);
+ static void zoom(const Arg *);
+ static void zoomabs(const Arg *);
+ static void zoomreset(const Arg *);
+@@ -253,6 +254,8 @@ static char *opt_title = NULL;
+ 
+ static int oldbutton = 3; /* button event on startup: 3 = release */
+ 
++int lightdarkindex = 0; /* set this to 1 to use dark by default */
++
+ void
+ clipcopy(const Arg *dummy)
+ {
+@@ -291,6 +294,20 @@ numlock(const Arg *dummy)
+ 	win.mode ^= MODE_NUMLOCK;
+ }
+ 
++void
++swapcolors(const Arg *dummy)
++{
++	defaultfg = lightdarkindex ? 12 : 11;
++	defaultbg = lightdarkindex ? 15 : 8;
++	defaultcs = lightdarkindex ? 10 : 14;
++	defaultrcs = lightdarkindex ? 8 : 15;
++
++	lightdarkindex = !lightdarkindex;
++
++	xloadcols();
++	redraw();
++}
++
+ void
+ zoom(const Arg *arg)
+ {
+-- 
+2.25.1
+
